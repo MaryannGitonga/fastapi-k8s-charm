@@ -1,0 +1,27 @@
+name: demo-api-charm
+type: charm
+title: |
+  demo-fastapi-k8s
+description: |
+  This is a demo charm built on top of a small Python FastAPI server.
+  This charm can be integrated with the PostgreSQL charm and COS Lite bundle (Canonical Observability Stack).
+summary: |
+  FastAPI Demo charm for Kubernetes
+bases:
+  - build-on:
+    - name: ubuntu
+      channel: "22.04"
+    run-on:
+      - name: ubuntu
+        channel: "22.04"
+assumes:
+  - juju >= 3.1
+  - k8s-api
+containers:
+  demo-server:
+    resource: demo-server-image
+resources:
+  demo-server-image:
+    type: oci-image
+    description: OCI image from GitHub Container Repository
+    upstream-source: ghcr.io/canonical/api_demo_server:1.0.1
