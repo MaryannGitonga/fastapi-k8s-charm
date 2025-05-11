@@ -12,9 +12,9 @@ class FastAPIDemoCharm(ops.CharmBase):
     """
 
     def __init__(self, framework: ops.Framework) -> None:
-        self.pebble_service_name = "fastapi-service"
-
         super().__init__(framework)
+        self.pebble_service_name = "fastapi-service"
+        framework.observe(self.on.demo_server_pebble_ready, self._on_demo_server_pebble_ready)
     
     def _on_demo_server_pebble_ready(self, event: ops.PebbleReadyEvent) -> None:
         """
@@ -42,7 +42,7 @@ class FastAPIDemoCharm(ops.CharmBase):
             'uvicorn',
             'api_demo_server.app:app',
             '--host=0.0.0.0',
-            '--port=800',
+            '--port=8000',
         ])
 
         pebble_layer: ops.pebble.LayerDict = {
