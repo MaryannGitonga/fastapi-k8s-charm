@@ -15,7 +15,7 @@ class FastAPIDemoCharm(ops.CharmBase):
         super().__init__(framework)
         self.pebble_service_name = "fastapi-service"
         framework.observe(self.on.demo_server_pebble_ready, self._on_demo_server_pebble_ready)
-    
+
     def _on_demo_server_pebble_ready(self, event: ops.PebbleReadyEvent) -> None:
         """
         Define & start a workload using the Pebble API
@@ -31,7 +31,7 @@ class FastAPIDemoCharm(ops.CharmBase):
         container.replan()
 
         self.unit.status = ops.ActiveStatus()
-    
+
     @property
     def _pebble_layer(self) -> ops.pebble.Layer:
         """
@@ -60,5 +60,5 @@ class FastAPIDemoCharm(ops.CharmBase):
 
         return ops.pebble.Layer(pebble_layer)
     
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     ops.main(FastAPIDemoCharm)
