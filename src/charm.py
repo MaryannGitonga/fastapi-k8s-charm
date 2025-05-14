@@ -130,7 +130,7 @@ class FastAPIDemoCharm(ops.CharmBase):
         port = self.config['server-port']
 
         if port == 22:
-            event.add_status(ops.BlockedStatus('Invalid port, number, 22 is reserved for SSH'))
+            event.add_status(ops.BlockedStatus('Invalid port number, port 22 is reserved for SSH'))
 
         if not self.model.get_relation('database'):
             # need the user to do 'juju integrate'
