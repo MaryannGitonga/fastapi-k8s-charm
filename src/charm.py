@@ -26,9 +26,13 @@ class FastAPIDemoCharm(ops.CharmBase):
 
         framework.observe(self.on.demo_server_pebble_ready, self._on_demo_server_pebble_ready)
         framework.observe(self.on.config_changed, self._on_config_changed)
+        
         framework.observe(self.database.on.database_created, self._on_database_created)
         framework.observe(self.database.on.endpoints_changed, self._on_database_created)
+        
         framework.observe(self.on.collect_unit_status, self._on_collect_status)
+        
+        framework.observe(self.on.get_db_info_action, self._on_get_db_info_action)
 
     @property
     def _pebble_layer(self) -> ops.pebble.Layer:
@@ -149,6 +153,37 @@ class FastAPIDemoCharm(ops.CharmBase):
         
         # if nothing is wrong, then status is active
         event.add_status(ops.ActiveStatus())
+    
+    def _on_get_db_info_action(self, event: ops.ActionEvent) -> None:
+        """
+        Called when "get_db_info" action is called. It shows info about
+        database access points by calling the `fetch_postgres_relation_data` method
+        & creates an output dict containing host, port, if show_password is True,
+        then include username & password of the db.
+        If the PostgreSQL charm isn't integrated, the output is set to "No database connected".
+        """
+
+        show_password = event.params['show-password']
+        db_data = self.fetch_postgres_relation_data()
+
+        if not db_data:
+            event.fail('No database connected')
+            return
+        
+        output = {
+            'db-host': db_data.get('db_host', None),
+            'db-port': db_data.get('db_port', None),
+        }
+
+        if show_password:
+            output.update(
+                {
+                    'db-usernmame': db_data.get('db_username', None),
+                    'db-password': db_data.get('db_password', None),
+                }
+            )
+        
+        event.set_results(output)
 
     # ----- end of event handlers/hooks -----
 
