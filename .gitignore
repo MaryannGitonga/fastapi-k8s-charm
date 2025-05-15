@@ -3,3 +3,7 @@ __pycache__
 *.charm
 grafana_dashboards
 lib
+*.toml
+*.lock
+htmlcov
+.tox
