@@ -6,6 +6,10 @@ import logging
 from charms.data_platform_libs.v0.data_interfaces import DatabaseCreatedEvent
 from charms.data_platform_libs.v0.data_interfaces import DatabaseRequires
 
+from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
+from charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
+from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
+
 # log messages can be retrieved using juju debug-log
 logger = logging.getLogger(__name__)
 
@@ -19,10 +23,19 @@ class FastAPIDemoCharm(ops.CharmBase):
 
         self.pebble_service_name = "fastapi-service"
         self.container = self.unit.get_container("demo-server")
-
         # the 'relation_name': comes from the 'charmcraft.yaml file'
         # the 'database_name': name of the db that the app requires
         self.database = DatabaseRequires(self, relation_name="database", database_name="names_db")
+        self._prometheus_scraping = MetricsEndpointProvider(
+            self,
+            relation_name="metrics-endpoint",
+            jobs=[{"static_configs": [{"targets": [f"*:{self.config['server-port']}"]}]}],
+            refresh_event=self.on.config_changed,
+        )
+        self._logging = LogProxyConsumer(
+            self, relation_name="log-proxy", log_files=["demo_server.log"]
+        )
+        self._grafana_dashboards = GrafanaDashboardProvider(self, relation_name="grafana-dashboard")
 
         framework.observe(self.on.demo_server_pebble_ready, self._on_demo_server_pebble_ready)
         framework.observe(self.on.config_changed, self._on_config_changed)
@@ -178,7 +191,7 @@ class FastAPIDemoCharm(ops.CharmBase):
         if show_password:
             output.update(
                 {
-                    'db-usernmame': db_data.get('db_username', None),
+                    'db-username': db_data.get('db_username', None),
                     'db-password': db_data.get('db_password', None),
                 }
             )
